@@ -3,7 +3,7 @@
 #include "Array/IArray.h"
 
 template< class Ty >
-void InsertSort( IArray<Ty>& v )
+void InsertSort( IArray< Ty >& v )
 {
     for( size_t i = 1; i < v.size(); ++i )
     {

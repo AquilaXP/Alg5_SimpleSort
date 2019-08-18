@@ -15,6 +15,7 @@
 #include "ShellSort.h"
 #include "ShellSortStep.h"
 
+/// Создать последовательность и перемешать
 VectorArray<int> Shuffle( size_t count )
 {
     VectorArray<int> res( count );
@@ -28,6 +29,7 @@ VectorArray<int> Shuffle( size_t count )
     return res;
 }
 
+/// Создать последовательность и перемешать count_shuffle элементов
 VectorArray<int> ShufflePartElement( size_t count, size_t count_shuffle )
 {
     std::vector<int> arr( count );
@@ -41,17 +43,17 @@ VectorArray<int> ShufflePartElement( size_t count, size_t count_shuffle )
     std::mt19937_64 engine(1);
     std::uniform_int_distribution<size_t> dist{ 0, count - 1 };
 
-    // ���������� set ����� �� ���� ����������
+    // используем set чтобы не было дубликатов
     std::set<size_t> s;
     while( s.size() < count_shuffle )
     {
         s.insert( dist( engine ) );
     }
-    // ������������ ������� ������� ����� ������ ����� �����
+    // перемешиваем индексы которые будем менять между собой
     std::vector<size_t> random_pos( std::begin( s ), std::end( s ) );
     std::random_shuffle( std::begin( random_pos ), std::end( random_pos ) );
 
-    // ������
+    // мешаем
     for( size_t i = 1; i < random_pos.size(); ++i )
     {
         size_t index1 = random_pos[i - 1];
@@ -61,6 +63,7 @@ VectorArray<int> ShufflePartElement( size_t count, size_t count_shuffle )
     return res;
 }
 
+/// Создать последовательность и перемешать precent % элементов
 VectorArray<int> ShufflePrecent( size_t count, size_t precent )
 {
     size_t count_shufle = size_t(count * precent * 0.01);
@@ -117,93 +120,49 @@ private:
     std::vector< ResTest > ExecC( size_t count )
     {
         std::cout << count << '\n';
+        
+        std::vector< ResTest > resultes;
 
-        const size_t i = 0;
+        ResTest res = LaunchTestAlg( "InsertSort", "-", count,
+            []( IArray<int>& arr ){ InsertSort( arr ); } );
+        resultes.emplace_back( res );
 
-        std::vector< ResTest > reses;
+        res = LaunchTestAlg( "ShellSort", "step-1", count,
+            [count]( IArray<int>& arr ){ ShellSort( arr, ShellStep( 1 ) ); } );
+        resultes.emplace_back( res );
 
-        ResTest insertSort;
-        insertSort.name = "InsertSort";
-        insertSort.seq = "-";
-        insertSort.count = count;
-        insertSort.times = Tests<acc_t>(
-            count, []( IArray<int>& arr ){ InsertSort( arr ); } );
-        reses.emplace_back( insertSort );
+        res = LaunchTestAlg( "ShellSort", "ShellStep", count,
+            [count]( IArray<int>& arr ){ ShellSort( arr, ShellStep( count ) ); } );
+        resultes.emplace_back( res );
 
-        std::cout << reses.back().name << '\n';
+        res = LaunchTestAlg( "ShellSort", "FrankLazarusStep", count,
+            [count]( IArray<int>& arr ){ ShellSort( arr, FrankLazarusStep( count ) ); } );
+        resultes.emplace_back( res );
 
-        ResTest shellSort_1;
-        shellSort_1.name = "ShellSort";
-        shellSort_1.seq = "1";
-        shellSort_1.count = count;
-        shellSort_1.times = Tests< acc_t >(
-            count, [count]( IArray<int>& arr ){ ShellSort( arr, ShellStep( 1 ) ); } );
-        reses.emplace_back( shellSort_1 );
+        res = LaunchTestAlg( "ShellSort", "Sedgewick1982Step", count,
+            [count]( IArray<int>& arr ){ ShellSort( arr, Sedgewick1982Step( count ) ); } );
+        resultes.emplace_back( res );
 
-        std::cout << reses.back().name << '\n';
+        res = LaunchTestAlg( "ShellSort", "Ciura", count,
+            []( IArray<int>& arr ){ ShellSort( arr, Ciura() ); } );
+        resultes.emplace_back( res );
 
-        ResTest shellSort;
-        shellSort.name = "ShellSort";
-        shellSort.seq = "ShellStep";
-        shellSort.count = count;
-        shellSort.times = Tests< acc_t >(
-            count, [count]( IArray<int>& arr ){ ShellSort( arr, ShellStep( count ) ); } );
-        reses.emplace_back( shellSort );
-
-        std::cout << reses.back().name << '\n';
-
-        ResTest shellSort2;
-        shellSort2.name = "ShellSort";
-        shellSort2.seq = "FrankLazarusStep";
-        shellSort2.count = count;
-        shellSort2.times = Tests< acc_t >(
-            count, [count]( IArray<int>& arr ){ ShellSort( arr, FrankLazarusStep( count ) ); } );
-        reses.emplace_back( shellSort2 );
-
-        std::cout << reses.back().name << '\n';
-
-        ResTest shellSort3;
-        shellSort3.name = "ShellSort";
-        shellSort3.seq = "Sedgewick1982Step";
-        shellSort3.count = count;
-        shellSort3.times = Tests< acc_t >(
-            count, [count]( IArray<int>& arr ){ ShellSort( arr, Sedgewick1982Step( count ) ); } );
-        reses.emplace_back( shellSort3 );
-
-        std::cout << reses.back().name << '\n';
-
-        ResTest shellSort4;
-        shellSort4.name = "ShellSort";
-        shellSort4.seq = "Ciura";
-        shellSort4.count = count;
-        shellSort4.times = Tests< acc_t >(
-            count, []( IArray<int>& arr ){ ShellSort( arr, Ciura() ); } );
-        reses.emplace_back( shellSort4 );
-
-        std::cout << reses.back().name << '\n';
-
-        return reses;
+        return resultes;
     }
 
-    void Save( const std::vector<ResTest>& results, const std::string& name, const std::string& acc )
+    template< class Func >
+    auto LaunchTestAlg( const std::string& name, const std::string& seq, size_t count, Func func )
     {
-        std::ofstream ofs( name );
-        if( !ofs )
-            throw std::runtime_error( "not open file " + name );
-
-        ofs << "NameAlg;Seq;Time Random," << acc <<
-            ";Time Random 5, " << acc <<
-            ";Time Random 10%, " + acc + "\n";
-        for( auto& res : results )
-        {
-            ofs << res.name << ';' << res.seq << ';' <<
-                std::get<0>( res.times ) << ';' <<
-                std::get<1>( res.times ) << ';' <<
-                std::get<2>( res.times ) << '\n';
-        }
+        ResTest algSort;
+        algSort.name = name;
+        algSort.seq = seq;
+        algSort.count = count;
+        algSort.times = Tests( count, func );
+        std::cout << name << '-' << seq << '\n';
+        return algSort;
     }
 
-    template<class Acc,class Func>
+    template< class Func >
     auto Tests( size_t count, Func func )
     {
         auto arr = Shuffle( count );
@@ -211,11 +170,12 @@ private:
         auto arr10 = ShufflePrecent( count, 10 );
 
         return std::make_tuple( 
-            Test<Acc>( arr, func ),
-            Test<Acc>( arr5, func ),
-            Test<Acc>( arr10, func ) );
+            Test( arr, func ),
+            Test( arr5, func ),
+            Test( arr10, func ) );
     }
-    template<class Acc, class Func>
+
+    template< class Func >
     size_t Test( IArray<int>& arr, Func func )
     {
         using namespace std::chrono;
@@ -227,7 +187,7 @@ private:
             if( arr.get( i - 1 ) > arr.get( i ) )
                 throw std::runtime_error( "incorect algorithm sort!" );
 
-        return size_t(duration_cast<Acc>( e - s ).count());
+        return size_t(duration_cast<acc_t>( e - s ).count());
     }
 };
 

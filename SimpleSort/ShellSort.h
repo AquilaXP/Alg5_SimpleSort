@@ -1,7 +1,7 @@
 #pragma once
 
 template< class Ty, class Func >
-void ShellSort( IArray<Ty>& v, Func func )
+void ShellSort( IArray< Ty >& v, Func func )
 {
     if( v.size() < 2 )
         return;
