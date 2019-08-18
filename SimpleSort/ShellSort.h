@@ -21,12 +21,8 @@ void ShellSort( IArray<Ty>& v, Func func )
 template< class Ty >
 void InsertSubArrSort( IArray< Ty >& arr, size_t shift, size_t step )
 {
-    if( arr.size() < shift + step )
-        return;
-
-    for( size_t i = shift + step; i < arr.size(); i += step )
+    for( size_t i = shift; i < arr.size(); i += step )
     {
-        size_t j = i;
         for( size_t j = i; step <= j; j -= step )
         {
             if( arr.get( j ) < arr.get( j - step ) )

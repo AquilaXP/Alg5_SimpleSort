@@ -2,6 +2,22 @@
 
 #include "Array/IArray.h"
 
+template< class Ty >
+void InsertSort( IArray<Ty>& v )
+{
+    for( size_t i = 1; i < v.size(); ++i )
+    {
+        for( size_t j = i; j != 0; --j )
+        {
+            if( v.get( j ) < v.get( j - 1 ) )
+                std::swap( v.get( j ), v.get( j - 1 ) );
+            else
+                break;
+        }
+    }
+}
+
+
 template< class BidirIt >
 void InsertSort( BidirIt first, BidirIt last )
 {
@@ -37,24 +53,5 @@ void InsertSort( BidirIt first, BidirIt last )
         }
         ++lastSort;
         ++firstUnsort;
-    }
-}
-
-template< class Ty >
-void InsertSort( IArray<Ty>& v )
-{
-    if( v.size() < 2 )
-        return;
-
-    for( size_t i = 1; i < v.size(); ++i )
-    {
-        size_t j = i;
-        for( size_t j = i; j != 0; --j )
-        {
-            if( v.get( j ) < v.get( j - 1 ) )
-                std::swap( v.get( j ), v.get( j - 1 ) );
-            else
-                break;
-        }
     }
 }
