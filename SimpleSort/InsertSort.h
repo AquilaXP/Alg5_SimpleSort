@@ -17,6 +17,21 @@ void InsertSort( IArray< Ty >& v )
     }
 }
 
+template< class Ty >
+void InsertSort( IArray< Ty >& v, size_t first, size_t last )
+{
+    for( size_t i = first + 1; i < last; ++i )
+    {
+        for( size_t j = i; j != first; --j )
+        {
+            if( v.get( j ) < v.get( j - 1 ) )
+                std::swap( v.get( j ), v.get( j - 1 ) );
+            else
+                break;
+        }
+    }
+}
+
 
 template< class BidirIt >
 void InsertSort( BidirIt first, BidirIt last )
